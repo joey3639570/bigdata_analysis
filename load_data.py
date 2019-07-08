@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import os
 
+# Label stands for the group that the data belongs.
 class dataset():
     def __init__(self):
         self.datalist = []
@@ -81,7 +82,26 @@ def read_data(full_file_path):
     nparray_data = np.stack(nparray_data,axis=0)
     print(nparray_data)
 
+'''
+Give a full path of the train data, 
+return a list of dataset objects.
+
+example:
+    train_dir = 'train_data'
+    Datasets = get_datasets(train_dir)
+    print(Datasets[0].datalist)
+    print(Datasets[0].label)
     
+Get the full file list...
+Get the full file label list...
+[[ 65.9  65.9  65.9 ... 127.2 125.7 125.3]
+ [ 65.8  65.8  65.8 ... 112.9 111.3 110.7]
+ [ 64.2  64.2  64.2 ... 111.1 109.6 109.3]
+ [ 64.9  64.9  64.9 ... 139.6 138.1 137.5]
+ [ 66.   66.   66.  ... 123.  122.  121.8]]
+G11
+
+'''
 def get_datasets(train_dir):
     """Return a list datasets"""
     file_list, label_list = get_full_file_list(train_dir)
