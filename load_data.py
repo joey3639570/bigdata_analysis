@@ -110,7 +110,6 @@ def get_datasets(train_dir):
         newDataset = dataset()
         newDataset.read_data(file_list[i])
         newDataset.add_label(label_list[i])
-        i+=1
         datasets.append(newDataset)
     return datasets
     
