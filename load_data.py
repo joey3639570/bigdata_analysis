@@ -2,23 +2,47 @@ import pandas as pd
 import numpy as np
 import os
 
+class dataset():
+    def __init__(self):
+        self.datalist = []
+        self.label = ''
+    
+    def read_data(self, full_file_path):
+        data = pd.read_csv(full_file_path, sep="\t")
+        nparray_data = []
+        #print("There are", len(data.columns)-1 , "rows.")
+        for i in range(0,len(data.columns)-1):
+            array_data = data.iloc[1:,i].to_numpy()
+            #Get rid of the space
+            array_data = np.array([s.strip() for s in array_data],dtype=np.float32)
+            nparray_data.append(array_data)
+            #print(array_data)
+            #print(len(array_data))
+        self.datalist = np.stack(nparray_data,axis=0)
+        
+    def add_label(self, label):
+        self.label = label
+    
 # Put the directory of data in, you can get the full file list of the directory
 def get_full_file_list(train_dir):
     full_file_list = []
+    full_file_label_list = []
     group_dir = os.listdir(train_dir)
     for group in group_dir:
-        file_list = []
         #print(group)
         path = train_dir + '/' + group
         #print(os.listdir(path))
         file_array = os.listdir(path)
         for file in file_array:
             file_path = path + '/' + file
-            file_list.append(file_path)
-        full_file_list.append(file_list)
+            full_file_list.append(file_path)
+            full_file_label_list.append(group)
     print("Get the full file list...")
+    print("Get the full file label list...")
     #print(full_file_list)
-    return full_file_list
+    #print(full_file_label_list)
+    return full_file_list, full_file_label_list
+
 '''
 Give a full path of a txt data, 
 print out how many rows there are,
@@ -36,6 +60,7 @@ There are 6 rows.
  [ 64.3  64.3  64.3 ... 118.3 117.6 117.4]]
     
 '''
+#This function support you for reading data.
 def read_data(full_file_path):
     #Using tab to seperate data
     data = pd.read_csv(full_file_path, sep="\t")
@@ -45,7 +70,7 @@ def read_data(full_file_path):
     print(data.columns)
     '''
     nparray_data = []
-    print("There are", len(data.columns)-1 , "rows.")
+    #print("There are", len(data.columns)-1 , "rows.")
     for i in range(0,len(data.columns)-1):
         array_data = data.iloc[1:,i].to_numpy()
         #Get rid of the space
@@ -55,15 +80,32 @@ def read_data(full_file_path):
         #print(len(array_data))
     nparray_data = np.stack(nparray_data,axis=0)
     print(nparray_data)
+
     
+def get_datasets(train_dir):
+    """Return a list datasets"""
+    file_list, label_list = get_full_file_list(train_dir)
+    datasets = []
+    for i in range(0,len(file_list)):
+        newDataset = dataset()
+        newDataset.read_data(file_list[i])
+        newDataset.add_label(label_list[i])
+        i+=1
+        datasets.append(newDataset)
+    return datasets
     
         
 def main():
     #Point out your directory here
     train_dir = 'train_data'
-    full_file = get_full_file_list(train_dir)
-    print(full_file[0][1])
+    '''
+    full_file, full_file_label = get_full_file_list(train_dir)
+    print(len(full_file))
     read_data(full_file[0][1])
+    '''
+    Datasets = get_datasets(train_dir)
+    print(Datasets[0].datalist)
+    print(Datasets[0].label)
     
 if __name__ == '__main__':
     main()
