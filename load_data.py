@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import os
+from sklearn import preprocessing
 
 # Label stands for the group that the data belongs.
 class dataset():
@@ -112,7 +113,34 @@ def get_datasets(train_dir):
         newDataset.add_label(label_list[i])
         datasets.append(newDataset)
     return datasets
+'''
+A function for you to make labelencoder, return a labelencoder object
+example::
+    le = label_encoder(train_dir)
+-> Set up labelencoder.
     
+    list(le.classes_)
+Classes ::
+['G11', 'G15', 'G17', 'G19', 'G32', 'G34', 'G48', 'G49']
+-> Show you the class of this label encoder
+
+Other example::
+    le.transform(["tokyo", "tokyo", "paris"]) 
+array([2, 2, 1]...)
+-> Allow you to transform new label list
+
+    list(le.inverse_transform([2, 2, 1]))
+['tokyo', 'tokyo', 'paris']
+-> Allow you to transform your result
+'''
+
+def label_encoder(train_dir):
+    file_list, label_list = get_full_file_list(train_dir)
+    le = preprocessing.LabelEncoder()
+    le.fit(label_list)
+    print("Classes ::")
+    print(list(le.classes_))
+    return le
         
 def main():
     #Point out your directory here
@@ -122,9 +150,11 @@ def main():
     print(len(full_file))
     read_data(full_file[0][1])
     '''
-    Datasets = get_datasets(train_dir)
-    print(Datasets[0].datalist)
-    print(Datasets[0].label)
+    #Datasets = get_datasets(train_dir)
+    
+    le = label_encoder(train_dir)
+    result = le.transform(['G11', 'G15', 'G17', 'G19', 'G32', 'G34', 'G48', 'G49'])
+    print(result)
     
 if __name__ == '__main__':
     main()
