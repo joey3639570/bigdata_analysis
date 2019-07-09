@@ -1,3 +1,4 @@
 bigdata_datasets
 .ipynb_checkpoints
 __pycache__
+*.swp
