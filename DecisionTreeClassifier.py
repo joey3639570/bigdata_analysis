@@ -48,7 +48,7 @@ def main():
     #print(train_data.shape)
     #train_data = np.stack(train_data,axis=0)
     label_list = le.transform(label_list)
-    # loop for random_state 1 to 100 for test
+    # loop for random_state 1 to 100 to test
     for k in range(1,100):
         x_train, x_test, y_train, y_test = train_test_split(train_data, 
                                                             label_list, 
