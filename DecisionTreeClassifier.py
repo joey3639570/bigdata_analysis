@@ -19,16 +19,15 @@ def main():
     datasets = load_data.get_datasets(train_dir)
     fixed_d = preprocess.non_zero_fix(datasets)
     fixed_d = preprocess.interpolation_fix(fixed_d)
-    # IF want preprocess train_data, only comment following two line
-    """
+    # IF want preprocess train_data, only comment following one line
+    
     Datasets = fixed_d
-    le = load_data.label_encoder(train_dir)
-    """
-    # IF want use raw data to train, only comment following two line
-    """
+    
+    # IF want use raw data to train, only comment following one line
+    
     Datasets = load_data.get_datasets(train_dir)
+    
     le = load_data.label_encoder(train_dir)
-    """
     train_data = []
     label_list = []
     #create label list
