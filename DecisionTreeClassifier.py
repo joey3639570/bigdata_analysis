@@ -65,6 +65,6 @@ def main():
         #will print acc every loops
         print(dt_accuracy)
 
-    print("finish................")
+    print("======finish======")
 if __name__ == '__main__':
     main()
