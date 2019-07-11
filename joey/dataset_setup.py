@@ -1,5 +1,6 @@
 import load_data
 import numpy as np
+import preprocess
 
 '''
 This allows you to build a dataset with the first 150 data.
@@ -56,9 +57,52 @@ def first150_with_bad_value(train_dir):
     label_list = le.transform(label_list)
     return train_data, label_list
 
+'''
+Give the directory of train data,
+return a numpy array train data and a list of label
+train data is averaged by combing the temperature column into one.
+'''
+def first150_with_bad_value_average(train_dir):
+    Datasets = load_data.get_datasets(train_dir)
+    le = load_data.label_encoder(train_dir)
+    train_data = []
+    label_list = []
+    for dataset in Datasets:
+        temp = []
+        for data in dataset.datalist:
+            temp.append(data[:150])
+        temp = np.array(temp,dtype=np.float32)
+        temp = np.average(temp, axis=0)
+        train_data.append(temp)
+        label_list.append(dataset.label)
+    
+    train_data = np.stack(train_data)
+    label_list = le.transform(label_list)
+    return train_data, label_list
+
+def first150_with_preprocessing_average(train_dir):
+    Datasets = load_data.get_datasets(train_dir)
+    fixed_d = preprocess.non_zero_fix(Datasets)
+    Datasets = preprocess.interpolation_fix(fixed_d)
+    le = load_data.label_encoder(train_dir)
+    train_data = []
+    label_list = []
+    for dataset in Datasets:
+        temp = []
+        for data in dataset.datalist:
+            temp.append(data[:150])
+        temp = np.array(temp,dtype=np.float32)
+        temp = np.average(temp, axis=0)
+        train_data.append(temp)
+        label_list.append(dataset.label)
+    
+    train_data = np.stack(train_data)
+    label_list = le.transform(label_list)
+    return train_data, label_list
+
 def main():
     train_dir = '../train_data'
-    train,label = first150_with_bad_value(train_dir)
+    train,label = first150_with_preprocessing_average(train_dir)
     print(train)
     print(label)
     
