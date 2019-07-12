@@ -57,12 +57,41 @@ def get_noise(datasets):
         
         new_d.append(newDataset)    
     return np.array(new_d)
+"""
+Replace the value which have huge change to last time temperature
+This case is over 30 degree, will 
+"""
+def huge_change_fix(datasets):
+    for d in datasets:
+        for col in d.datalist:
+            for i in range(2,len(col)-1):
+                if col[i]-col[i-1] < -30:
+                    col[i] = mean_predict(d,col,i)
+                elif col[i]-col[i-1] > 30:
+                    col[i] = mean_predict(d,col,i)
+    return datasets
+"""
+Mean predict
+Get mean of same time data in that datalist to subtitude the error data
+"""
+
+def mean_predict(d,col,i):
+    predict = 0
+    count=0
+    for col in d.datalist:
+        predict += col[i]
+        count+=1
+    count -=1
+    predict = predict-col[i]
+    predict = predict/count
+    return predict
 
 def main():
     DATASET_DIR = './bigdata_datasets'
     datasets = load_data.get_datasets(DATASET_DIR)
     fixed_d = non_zero_fix(datasets)
     fixed_d = interpolation_fix(fixed_d)
+    fixed_d = huge_change_fix(fixed_d)
     plotter.plot_all(fixed_d)
 
 if __name__ == '__main__':
