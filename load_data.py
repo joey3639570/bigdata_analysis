@@ -114,6 +114,10 @@ def get_datasets(train_dir):
         datasets.append(newDataset)
     return datasets
 
+def get_datasets_with_encoder(train_dir):
+    datasets = get_datasets(train_dir)
+    le = get_label_encoder(datasets)
+    return datasets, le
 '''
 A function for you to make labelencoder, return a labelencoder object
 example::
@@ -143,6 +147,12 @@ def label_encoder(train_dir):
     print(list(le.classes_))
     return le
         
+def get_label_encoder(datasets):
+    label_list = [d.label for d in datasets]
+    le = preprocessing.LabelEncoder()
+    le.fit(label_list)
+    return le 
+
 def main():
     #Point out your directory here
     train_dir = 'train_data'
