@@ -1,6 +1,7 @@
 import numpy as np
 import load_data
 import plotter
+from sklearn.linear_model import LinearRegression
 
 MIN_LIM_TEMP = 20
 
@@ -70,6 +71,50 @@ def huge_change_fix(datasets):
                 elif col[i]-col[i-1] > 30:
                     col[i] = mean_predict(d,col,i)
     return datasets
+
+def huge_change_fix2(datasets):
+    count = 0
+    b_count = 0
+    for d in datasets:
+        for col in d.datalist:
+            for i in range(6,len(col)-6):
+                if col[i]-col[i-1] < -10 and col[i]-col[i-1] > -20:
+                    count += 1
+                    #print(d.label,"error",col[i])
+                    col[i] = linear_predict(col,i)
+                elif col[i]-col[i-1] < -20:
+                    b_count += 1
+                    #print(d.label,"error",col[i])
+                    col[i] = mean_predict(d,col,i)
+                elif col[i]-col[i-1] > 10 and col[i]-col[i-1] < 20:
+                    count += 1
+                    #print(d.label,"error",col[i])
+                    col[i] = linear_predict(col,i)
+                elif col[i]-col[i-1] > 20:
+                    b_count += 1
+                    #print(d.label,"error",col[i])
+                    col[i] = mean_predict(d,col,i)
+    print("small",count)
+    print("big",b_count)
+    return datasets
+
+"""
+Linear_regresssion
+"""
+def linear_predict(col,i):
+    X = []
+    y = []
+    for k in range(i-5,i+5):
+        X.append([k])
+    #print(X)
+    for n in range(i-6,i-1):
+        y.append(col[n])
+    for n in range(i+1,i+6):
+        y.append(col[n])
+    #print(y)
+    reg = LinearRegression().fit(X, y)
+    predict = float(reg.intercept_+reg.coef_*i)
+    return predict
 """
 Mean predict
 Get mean of same time data in that datalist to subtitude the error data
