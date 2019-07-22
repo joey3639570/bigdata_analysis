@@ -181,7 +181,9 @@ def main():
     print(len(full_file))
     read_data(full_file[0][1])
     '''
-    datasets, le = get_datasets_with_encoder(train_dir)
+    #Datasets = get_datasets(train_dir)
+    
+    le = label_encoder(train_dir)
     result = le.transform(['G11', 'G15', 'G17', 'G19', 'G32', 'G34', 'G48', 'G49'])
     print(result)
     
