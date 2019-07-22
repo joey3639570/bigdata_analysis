@@ -23,10 +23,12 @@ def first150_with_preprocessing_average_training(seed,train,label):
     
     print("Accuracy ::", accuracy)
     return accuracy
-    
+
 def main():
     train_dir = '../train_data'
-    train_data ,label_list = dataset_setup.first150_with_preprocessing_average(train_dir)
+    test_dir = '../test_data'
+    #le stands for label encoder
+    x_train ,y_train , x_test, le = dataset_setup.full_version_with_test(train_dir, test_dir)
     
     '''
     clf.fit(x_train, y_train)
@@ -55,6 +57,7 @@ def main():
     
     print("Accuracy ::", accuracy)
     '''
+    '''
     accuracy = []
     for i in range(1,301):
         print("Random state ::",i)
@@ -63,7 +66,15 @@ def main():
                                                      label=label_list)
         accuracy.append(acc)
     print(accuracy)
-    pd.DataFrame(accuracy).to_excel('output.xlsx', header=False, index=False)
+    pd.DataFrame(accuracy).to_excel('output_150noaverage.xlsx', header=False, index=False)
+    '''
+    clf = lgb.LGBMClassifier(silent=False)
+    bag = BaggingClassifier(base_estimator=clf, max_samples=0.5, max_features=0.5)
+    bag.fit(x_train, y_train)
+    y_predict = bag.predict(x_test)
+    print(y_predict)
+    y_predict_label = le.inverse_transform(y_predict)
+    print(y_predict_label)
     
 if __name__ == '__main__':
     main()

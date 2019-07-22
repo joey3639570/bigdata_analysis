@@ -45,6 +45,16 @@ def get_full_file_list(train_dir):
     #print(full_file_label_list)
     return full_file_list, full_file_label_list
 
+# Put the directory of data in, you can get the full file list of the test directory
+def get_test_data(test_dir):
+    full_file_list = []
+    file_array = os.listdir(test_dir)
+    for file in file_array:
+            file_path = test_dir + '/' + file
+            full_file_list.append(file_path)
+    print("Get the full test file list...")
+    return full_file_list
+    
 '''
 Give a full path of a txt data, 
 print out how many rows there are,
@@ -111,6 +121,16 @@ def get_datasets(train_dir):
         newDataset = dataset()
         newDataset.read_data(file_list[i])
         newDataset.add_label(label_list[i])
+        datasets.append(newDataset)
+    return datasets
+
+def get_test_datasets(test_dir):
+    """Return a list of test datasets"""
+    file_list = get_test_data(test_dir)
+    datasets = []
+    for i in range(0,len(file_list)):
+        newDataset = dataset()
+        newDataset.read_data(file_list[i])
         datasets.append(newDataset)
     return datasets
 
