@@ -60,6 +60,31 @@ def first150_with_bad_value(train_dir):
 '''
 Give the directory of train data,
 return a numpy array train data and a list of label
+train data will combine the temperature column into one row.
+'''
+def first150_with_preprocessing(train_dir):
+    Datasets = load_data.get_datasets(train_dir)
+    fixed_d = preprocess.non_zero_fix(Datasets)
+    Datasets = preprocess.interpolation_fix(fixed_d)
+    le = load_data.label_encoder(train_dir)
+    train_data = []
+    label_list = []
+    for dataset in Datasets:
+        temp = []
+        for i in range(0,4):
+            for data in dataset.datalist[i][:150]:
+                temp.append(data)
+        temp = np.array(temp,dtype=np.float32)
+        train_data.append(temp)
+        label_list.append(dataset.label)
+    
+    train_data = np.stack(train_data)
+    label_list = le.transform(label_list)
+    return train_data, label_list
+
+'''
+Give the directory of train data,
+return a numpy array train data and a list of label
 train data is averaged by combing the temperature column into one.
 '''
 def first150_with_bad_value_average(train_dir):
@@ -99,6 +124,50 @@ def first150_with_preprocessing_average(train_dir):
     train_data = np.stack(train_data)
     label_list = le.transform(label_list)
     return train_data, label_list
+
+
+'''
+Give the directory of train data and test data,
+return a numpy array train data and a list of label
+and a numpy array test data ana a label encoder.
+train data and test data is averaged by combing the temperature column into one.
+'''
+def full_version_with_test(train_dir,test_dir):
+    #Train data
+    train_datasets = load_data.get_datasets(train_dir)
+    fixed_d = preprocess.non_zero_fix(train_datasets)
+    train_datasets = preprocess.interpolation_fix(fixed_d)
+    #Test data
+    test_datasets = load_data.get_test_datasets(test_dir)
+    fixed_t = preprocess.non_zero_fix(test_datasets)
+    test_datasets = preprocess.interpolation_fix(fixed_t)
+    #Train label
+    le = load_data.label_encoder(train_dir)
+    #Train_data creating...
+    train_data = []
+    label_list = []
+    for dataset in train_datasets:
+        temp = []
+        for data in dataset.datalist:
+            temp.append(data[:150])
+        temp = np.array(temp,dtype=np.float32)
+        temp = np.average(temp, axis=0)
+        train_data.append(temp)
+        label_list.append(dataset.label)
+    #Test data creating...
+    test_data = []
+    for dataset in test_datasets:
+        temp = []
+        for data in dataset.datalist:
+            temp.append(data[:150])
+        temp = np.array(temp,dtype=np.float32)
+        temp = np.average(temp, axis=0)
+        test_data.append(temp)
+    
+    train_data = np.stack(train_data)
+    test_data = np.stack(test_data)
+    label_list = le.transform(label_list)
+    return train_data, label_list, test_data, le
 
 def main():
     train_dir = '../train_data'
