@@ -36,7 +36,8 @@ def get_full_file_list(train_dir):
         #print(os.listdir(path))
         file_array = os.listdir(path)
         for file in file_array:
-            file_path = path + '/' + file
+            file_path = os.path.join(path, file)
+            #file_path = path + '/' + file
             full_file_list.append(file_path)
             full_file_label_list.append(group)
     print("Get the full file list...")
@@ -50,8 +51,9 @@ def get_test_data(test_dir):
     full_file_list = []
     file_array = os.listdir(test_dir)
     for file in file_array:
-            file_path = test_dir + '/' + file
-            full_file_list.append(file_path)
+        file_path = os.path.join(test_dir, file)
+        #file_path = test_dir + '/' + file
+        full_file_list.append(file_path)
     print("Get the full test file list...")
     return full_file_list
     
@@ -117,25 +119,35 @@ def get_datasets(train_dir):
     """Return a list datasets"""
     file_list, label_list = get_full_file_list(train_dir)
     datasets = []
-    for i in range(0,len(file_list)):
-        newDataset = dataset()
-        newDataset.read_data(file_list[i])
-        newDataset.add_label(label_list[i])
-        datasets.append(newDataset)
+    for file_name, label_name in zip(file_list, label_list):
+        if os.path.isfile(file_name):
+            newDataset = dataset()
+            newDataset.read_data(file_name)
+            newDataset.add_label(label_name)
+            datasets.append(newDataset)
     return datasets
 
 def get_test_datasets(test_dir):
     """Return a list of test datasets"""
+    print("Loading test datasets, The reading file: ")
     file_list = get_test_data(test_dir)
     datasets = []
-    for i in range(0,len(file_list)):
-        newDataset = dataset()
-        newDataset.read_data(file_list[i])
-        datasets.append(newDataset)
+    indices = [int(os.path.splitext(os.path.basename(f))[0]) for f in file_list]
+    indices = np.argsort(indices)
+    file_list = [file_list[l] for l in indices]
+    for file_name in file_list:
+        if os.path.isfile(file_name):
+            print(file_name)
+            newDataset = dataset()
+            newDataset.read_data(file_name)
+            datasets.append(newDataset)
     return datasets
 
-def get_datasets_with_encoder(train_dir):
-    datasets = get_datasets(train_dir)
+def get_datasets_with_encoder(train_dir, mode="train"):
+    if mode == "train":
+        datasets = get_datasets(train_dir)
+    else:
+        datasets = get_test_datasets(train_dir)
     le = get_label_encoder(datasets)
     return datasets, le
 '''

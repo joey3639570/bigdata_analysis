@@ -14,10 +14,10 @@ from sklearn.model_selection import GridSearchCV
 import lightgbm as lgb
 
 
-def get_features(dataset_dir):
+def get_features(dataset_dir, mode="train"):
     # Load data
     print(">Loading data")
-    dataset, le = load_data.get_datasets_with_encoder(dataset_dir)
+    dataset, le = load_data.get_datasets_with_encoder(dataset_dir, mode)
 
     # Data preprocessing
     print(">Preprocessing data")
@@ -34,18 +34,22 @@ def get_features(dataset_dir):
     label_list = le.transform([d.label for d in dataset])
     print('Feature shape= ')
     print(train_data.shape)
-    return train_data, label_list
+    if mode=="train":
+        return train_data, label_list, le
+    else:
+        return train_data, label_list
 
+'''
+This script will automatically test the model by spliting the train_data and label according to the given test_size.
+Param:
+    train_data: Include train and test data
+    label_list: Include train and test data
+    max_depth:  Max depth of the tree in LGBM
+    num_leaves: Max number of leaves in LGBM
+    seed: The random seed to split test data from train_data
+'''
 def trainer_lightgbm(train_data, label_list, max_depth, num_leaves, seed=42, debug=True):
     x_train, x_test, y_train, y_test = train_test_split(train_data, label_list, test_size=0.3, random_state=seed)
-
-    ''' 
-    clf = lgb.LGBMClassifier(silent= not debug
-            , max_depth=5
-            , num_leaves=15)
-    clf.fit(x_train, y_train)
-    y_predict = clf.predict(x_test)
-    '''
     clf = lgb.LGBMClassifier(silent= not debug
             , max_depth=max_depth
             , num_leaves=num_leaves)
@@ -103,10 +107,7 @@ def plot_counting_3d(arr, pa1, pa2):
     ax.set_zlabel('accuracy')
     plt.show()
 
-def main():
-    #print('Available scorer: ')
-    #print(sorted(sklearn.metrics.SCORERS.keys()))
-
+def model_self_test():
     dataset_dir='bigdata_datasets'
     train_data, label_list = get_features(dataset_dir)
     print(">Training")
@@ -116,7 +117,6 @@ def main():
     for d in depths:
         leav = []
         for l in leaves:
-            
             acc = trainer_lightgbm(train_data, 
                     label_list, 
                     max_depth=d, 
@@ -124,39 +124,58 @@ def main():
                     seed=1, 
                     debug=False)
             
-            #acc = random.random()
             leav.append(acc)
         accuracy.append(leav)
     #plot_counting(accuracy)
     plot_counting_3d(accuracy, depths, leaves)
-    
-    '''
-    x_train, x_test, y_train, y_test = train_test_split(train_data, label_list, test_size=0.3, random_state=42)
-    clf = lgb.LGBMClassifier(silent=True
-            , max_depth=10
-            , num_leaves=40)
-    bag = BaggingClassifier(base_estimator=clf, max_samples=0.5, max_features=0.5)
-    #bag.fit(x_train, y_train)
 
-    param_grid = {
-            'max_depth':[5, 10, 15, 20],
-            'num_leaves':[20, 25, 30, 35, 40]
-    }
-    gbm = GridSearchCV(bag
-            , param_grid=param_grid
-            , scoring='accuracy'
-            , cv=3)
-    gbm.fit(x_train, y_train)
+'''
+Extrade features from train datasets and test datasets.
+Each combination of parameters result in a set of answer, and they vote
+, to determine the final answer.
+The reliability is the ratio of the occurance of the answer.
+'''
+def main():
+    depths = [5, 10, 15, 20, 25, 30]
+    leaves = [5, 10, 15, 20, 25, 30, 35, 45]
+
+    print("Getting train data")
+    train_data, train_label, le = get_features('bigdata_datasets', mode="train")
+    print("Getting test data")
+    test_data, test_label = get_features('thubigdata2019exam-722', mode="test")
     
-    print('Best parameters found by grid search are:', gbm.best_params_)
+    result = []
+    for d in depths:
+        for l in leaves:
+            clf = lgb.LGBMClassifier(silent= True
+                , max_depth=d
+                , num_leaves=l)
+            bag = BaggingClassifier(base_estimator=clf, max_samples=0.5, max_features=0.5)
+            bag.fit(train_data, train_label)
+            y_predict = bag.predict(test_data)
+            result.append(y_predict)
+            print(str(d) + "," + str(l) + " ", end="\t")
+            print(y_predict)
+            
+            #result.append(range(10))
+
+    answers = []
+    reliability = []
+
+    result = np.transpose(np.asarray(result))
+    sample_length = result.shape[1]
+    for ans in result:
+        counts = np.bincount(ans)
+        answers.append(np.argmax(counts))
+        reliability.append(np.amax(counts)/sample_length)
     
-    y_predict = gbm.predict(x_test)
-    print(y_predict)
-    print(y_test)
-    accuracy = accuracy_score(y_predict, y_test)
-    
-    print("Accuracy ::", accuracy)
-    '''
+    print("Reliability: ")
+    print(reliability)
+    predict_label = le.inverse_transform(answers)
+    print("Answer: ")
+    print(predict_label)
+    #print(y_test)
+    #accuracy = accuracy_score(y_predict, y_test)
 
 if __name__ == '__main__':
     main()
